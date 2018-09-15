@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" revision="0.9.5" language="Java" filename="checker.java">
+<comment type="block">/*
+   This applet lets two uses play checkers against each other.
+   Red always starts the game.  If a player can jump an opponent's
+   piece, then the player must jump.  When a plyer can make no more
+   moves, the game ends.
+
+   This file defines four classes: the main applet class, Checkers;
+   CheckersCanvas, CheckersMove, and CheckersData.
+   (This is not very good style; the other classes really should be
+   nested classes inside the Checkers class.)
+*/</comment>
+
+<import>import <name><name>java</name><operator>.</operator><name>awt</name><operator>.</operator><name>*</name></name>;</import>
+<import>import <name><name>java</name><operator>.</operator><name>awt</name><operator>.</operator><name>event</name><operator>.</operator><name>*</name></name>;</import>
+<import>import <name><name>java</name><operator>.</operator><name>applet</name><operator>.</operator><name>*</name></name>;</import>
+<import>import <name><name>java</name><operator>.</operator><name>util</name><operator>.</operator><name>Vector</name></name>;</import>
+
+
+<class><specifier>public</specifier> class <name>Checkers</name> <super><extends>extends <name>Applet</name></extends></super> <block>{
+
+   <comment type="block">/* The main applet class only lays out the applet.  The work of
+      the game is all done in the CheckersCanvas object.   Note that
+      the Buttons and Label used in the applet are defined as
+      instance variables in the CheckersCanvas class.  The applet
+      class gives them their visual appearance and sets their
+      size and positions.*/</comment>
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>init</name><parameter_list>()</parameter_list> <block>{
+
+      <expr_stmt><expr><call><name>setLayout</name><argument_list>(<argument><expr><literal type="null">null</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>  <comment type="line">// I will do the layout myself.</comment>
+
+      <expr_stmt><expr><call><name>setBackground</name><argument_list>(<argument><expr><operator>new</operator> <call><name>Color</name><argument_list>(<argument><expr><literal type="number">0</literal></expr></argument>,<argument><expr><literal type="number">150</literal></expr></argument>,<argument><expr><literal type="number">0</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt>  <comment type="line">// Dark green background.</comment>
+
+      <comment type="block">/* Create the components and add them to the applet. */</comment>
+
+      <decl_stmt><decl><type><name>CheckersCanvas</name></type> <name>board</name> <init>= <expr><operator>new</operator> <call><name>CheckersCanvas</name><argument_list>()</argument_list></call></expr></init></decl>;</decl_stmt>
+          <comment type="line">// Note: The constructor creates the buttons board.resignButton</comment>
+          <comment type="line">// and board.newGameButton and the Label board.message.</comment>
+      <expr_stmt><expr><call><name>add</name><argument_list>(<argument><expr><name>board</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>newGameButton</name><operator>.</operator><name>setBackground</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>lightGray</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>add</name><argument_list>(<argument><expr><name><name>board</name><operator>.</operator><name>newGameButton</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>resignButton</name><operator>.</operator><name>setBackground</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>lightGray</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>add</name><argument_list>(<argument><expr><name><name>board</name><operator>.</operator><name>resignButton</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>message</name><operator>.</operator><name>setForeground</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>green</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>message</name><operator>.</operator><name>setFont</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>Font</name><argument_list>(<argument><expr><literal type="string">"Serif"</literal></expr></argument>, <argument><expr><name><name>Font</name><operator>.</operator><name>BOLD</name></name></expr></argument>, <argument><expr><literal type="number">14</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>add</name><argument_list>(<argument><expr><name><name>board</name><operator>.</operator><name>message</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+      <comment type="block">/* Set the position and size of each component by calling
+         its setBounds() method. */</comment>
+
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>setBounds</name></name><argument_list>(<argument><expr><literal type="number">20</literal></expr></argument>,<argument><expr><literal type="number">20</literal></expr></argument>,<argument><expr><literal type="number">164</literal></expr></argument>,<argument><expr><literal type="number">164</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt> <comment type="line">// Note:  size MUST be 164-by-164 !</comment>
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>newGameButton</name><operator>.</operator><name>setBounds</name></name><argument_list>(<argument><expr><literal type="number">210</literal></expr></argument>, <argument><expr><literal type="number">60</literal></expr></argument>, <argument><expr><literal type="number">100</literal></expr></argument>, <argument><expr><literal type="number">30</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>resignButton</name><operator>.</operator><name>setBounds</name></name><argument_list>(<argument><expr><literal type="number">210</literal></expr></argument>, <argument><expr><literal type="number">120</literal></expr></argument>, <argument><expr><literal type="number">100</literal></expr></argument>, <argument><expr><literal type="number">30</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>message</name><operator>.</operator><name>setBounds</name></name><argument_list>(<argument><expr><literal type="number">0</literal></expr></argument>, <argument><expr><literal type="number">200</literal></expr></argument>, <argument><expr><literal type="number">330</literal></expr></argument>, <argument><expr><literal type="number">30</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+   }</block></function>
+
+}</block></class> <comment type="line">// end class Checkers</comment>
+
+
+
+
+<class>class <name>CheckersCanvas</name> <super><extends>extends <name>Canvas</name></extends> <implements>implements <name>ActionListener</name>, <name>MouseListener</name></implements></super> <block>{
+
+     <comment type="line">// This canvas displays a 160-by-160 checkerboard pattern with</comment>
+     <comment type="line">// a 2-pixel black border.  It is assumed that the size of the</comment>
+     <comment type="line">// canvas is set to exactly 164-by-164 pixels.  This class does</comment>
+     <comment type="line">// the work of letting the users play checkers, and it displays</comment>
+     <comment type="line">// the checkerboard.</comment>
+
+   <decl_stmt><decl><type><name>Button</name></type> <name>resignButton</name></decl>;</decl_stmt>   <comment type="line">// Current player can resign by clicking this button.</comment>
+   <decl_stmt><decl><type><name>Button</name></type> <name>newGameButton</name></decl>;</decl_stmt>  <comment type="line">// This button starts a new game.  It is enabled only</comment>
+                          <comment type="line">//     when the current game has ended.</comment>
+
+   <decl_stmt><decl><type><name>Label</name></type> <name>message</name></decl>;</decl_stmt>   <comment type="line">// A label for displaying messages to the user.</comment>
+
+   <decl_stmt><decl><type><name>CheckersData</name></type> <name>board</name></decl>;</decl_stmt>  <comment type="line">// The data for the checkers board is kept here.</comment>
+                        <comment type="line">//    This board is also responsible for generating</comment>
+                        <comment type="line">//    lists of legal moves.</comment>
+
+   <decl_stmt><decl><type><name>boolean</name></type> <name>gameInProgress</name></decl>;</decl_stmt> <comment type="line">// Is a game currently in progress?</comment>
+
+   <comment type="block">/* The next three variables are valid only when the game is in progress. */</comment>
+
+   <decl_stmt><decl><type><name>int</name></type> <name>currentPlayer</name></decl>;</decl_stmt>      <comment type="line">// Whose turn is it now?  The possible values</comment>
+                           <comment type="line">//    are CheckersData.RED and CheckersData.BLACK.</comment>
+   <decl_stmt><decl><type><name>int</name></type> <name>selectedRow</name></decl>, <decl><type ref="prev"/><name>selectedCol</name></decl>;</decl_stmt>  <comment type="line">// If the current player has selected a piece to</comment>
+                                  <comment type="line">//     move, these give the row and column</comment>
+                                  <comment type="line">//     containing that piece.  If no piece is</comment>
+                                  <comment type="line">//     yet selected, then selectedRow is -1.</comment>
+   <decl_stmt><decl><type><name><name>CheckersMove</name><index>[]</index></name></type> <name>legalMoves</name></decl>;</decl_stmt>  <comment type="line">// An array containing the legal moves for the</comment>
+                               <comment type="line">//   current player.</comment>
+
+
+   <constructor><specifier>public</specifier> <name>CheckersCanvas</name><parameter_list>()</parameter_list> <block>{
+          <comment type="line">// Constructor.  Create the buttons and lable.  Listen for mouse</comment>
+          <comment type="line">// clicks and for clicks on the buttons.  Create the board and</comment>
+          <comment type="line">// start the first game.</comment>
+      <expr_stmt><expr><call><name>setBackground</name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>black</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>addMouseListener</name><argument_list>(<argument><expr><name>this</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>setFont</name><argument_list>(<argument><expr><operator>new</operator>  <call><name>Font</name><argument_list>(<argument><expr><literal type="string">"Serif"</literal></expr></argument>, <argument><expr><name><name>Font</name><operator>.</operator><name>BOLD</name></name></expr></argument>, <argument><expr><literal type="number">14</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><name>resignButton</name> <operator>=</operator> <operator>new</operator> <call><name>Button</name><argument_list>(<argument><expr><literal type="string">"Resign"</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>resignButton</name><operator>.</operator><name>addActionListener</name></name><argument_list>(<argument><expr><name>this</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><name>newGameButton</name> <operator>=</operator> <operator>new</operator> <call><name>Button</name><argument_list>(<argument><expr><literal type="string">"New Game"</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>newGameButton</name><operator>.</operator><name>addActionListener</name></name><argument_list>(<argument><expr><name>this</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><name>message</name> <operator>=</operator> <operator>new</operator> <call><name>Label</name><argument_list>(<argument><expr><literal type="string">""</literal></expr></argument>,<argument><expr><name><name>Label</name><operator>.</operator><name>CENTER</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><name>board</name> <operator>=</operator> <operator>new</operator> <call><name>CheckersData</name><argument_list>()</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>doNewGame</name><argument_list>()</argument_list></call></expr>;</expr_stmt>
+   }</block></constructor>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>actionPerformed</name><parameter_list>(<parameter><decl><type><name>ActionEvent</name></type> <name>evt</name></decl></parameter>)</parameter_list> <block>{
+         <comment type="line">// Respond to user's click on one of the two buttons.</comment>
+      <decl_stmt><decl><type><name>Object</name></type> <name>src</name> <init>= <expr><call><name><name>evt</name><operator>.</operator><name>getSource</name></name><argument_list>()</argument_list></call></expr></init></decl>;</decl_stmt>
+      <if>if <condition>(<expr><name>src</name> <operator>==</operator> <name>newGameButton</name></expr>)</condition><then>
+         <block type="pseudo"><expr_stmt><expr><call><name>doNewGame</name><argument_list>()</argument_list></call></expr>;</expr_stmt></block></then>
+      <elseif>else <if>if <condition>(<expr><name>src</name> <operator>==</operator> <name>resignButton</name></expr>)</condition><then>
+         <block type="pseudo"><expr_stmt><expr><call><name>doResign</name><argument_list>()</argument_list></call></expr>;</expr_stmt></block></then></if></elseif></if>
+   }</block></function>
+
+
+   <function><type><name>void</name></type> <name>doNewGame</name><parameter_list>()</parameter_list> <block>{
+         <comment type="line">// Begin a new game.</comment>
+      <if>if <condition>(<expr><name>gameInProgress</name> <operator>==</operator> <literal type="boolean">true</literal></expr>)</condition><then> <block>{
+             <comment type="line">// This should not be possible, but it doens't</comment>
+             <comment type="line">// hurt to check.</comment>
+         <expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"Finish the current game first!"</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+         <return>return;</return>
+      }</block></then></if>
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>setUpGame</name></name><argument_list>()</argument_list></call></expr>;</expr_stmt>   <comment type="line">// Set up the pieces.</comment>
+      <expr_stmt><expr><name>currentPlayer</name> <operator>=</operator> <name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr>;</expr_stmt>   <comment type="line">// RED moves first.</comment>
+      <expr_stmt><expr><name>legalMoves</name> <operator>=</operator> <call><name><name>board</name><operator>.</operator><name>getLegalMoves</name></name><argument_list>(<argument><expr><name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>  <comment type="line">// Get RED's legal moves.</comment>
+      <expr_stmt><expr><name>selectedRow</name> <operator>=</operator> <operator>-</operator><literal type="number">1</literal></expr>;</expr_stmt>   <comment type="line">// RED has not yet selected a piece to move.</comment>
+      <expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"Red:  Make your move."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><name>gameInProgress</name> <operator>=</operator> <literal type="boolean">true</literal></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>newGameButton</name><operator>.</operator><name>setEnabled</name></name><argument_list>(<argument><expr><literal type="boolean">false</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>resignButton</name><operator>.</operator><name>setEnabled</name></name><argument_list>(<argument><expr><literal type="boolean">true</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>repaint</name><argument_list>()</argument_list></call></expr>;</expr_stmt>
+   }</block></function>
+
+
+   <function><type><name>void</name></type> <name>doResign</name><parameter_list>()</parameter_list> <block>{
+          <comment type="line">// Current player resigns.  Game ends.  Opponent wins.</comment>
+       <if>if <condition>(<expr><name>gameInProgress</name> <operator>==</operator> <literal type="boolean">false</literal></expr>)</condition><then> <block>{
+          <expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"There is no game in progress!"</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+          <return>return;</return>
+       }</block></then></if>
+       <if>if <condition>(<expr><name>currentPlayer</name> <operator>==</operator> <name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr>)</condition><then>
+          <block type="pseudo"><expr_stmt><expr><call><name>gameOver</name><argument_list>(<argument><expr><literal type="string">"RED resigns.  BLACK wins."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then>
+       <else>else
+          <block type="pseudo"><expr_stmt><expr><call><name>gameOver</name><argument_list>(<argument><expr><literal type="string">"BLACK resigns.  RED winds."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></else></if>
+   }</block></function>
+
+
+   <function><type><name>void</name></type> <name>gameOver</name><parameter_list>(<parameter><decl><type><name>String</name></type> <name>str</name></decl></parameter>)</parameter_list> <block>{
+          <comment type="line">// The game ends.  The parameter, str, is displayed as a message</comment>
+          <comment type="line">// to the user.  The states of the buttons are adjusted so playes</comment>
+          <comment type="line">// can start a new game.</comment>
+      <expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><name>str</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>newGameButton</name><operator>.</operator><name>setEnabled</name></name><argument_list>(<argument><expr><literal type="boolean">true</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>resignButton</name><operator>.</operator><name>setEnabled</name></name><argument_list>(<argument><expr><literal type="boolean">false</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><name>gameInProgress</name> <operator>=</operator> <literal type="boolean">false</literal></expr>;</expr_stmt>
+   }</block></function>
+
+
+   <function><type><name>void</name></type> <name>doClickSquare</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>row</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>col</name></decl></parameter>)</parameter_list> <block>{
+         <comment type="line">// This is called by mousePressed() when a player clicks on the</comment>
+         <comment type="line">// square in the specified row and col.  It has already been checked</comment>
+         <comment type="line">// that a game is, in fact, in progress.</comment>
+
+      <comment type="block">/* If the player clicked on one of the pieces that the player
+         can move, mark this row and col as selected and return.  (This
+         might change a previous selection.)  Reset the message, in
+         case it was previously displaying an error message. */</comment>
+
+      <for>for <control>(<init><decl><type><name>int</name></type> <name>i</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>i</name> <operator>&lt;</operator> <name><name>legalMoves</name><operator>.</operator><name>length</name></name></expr>;</condition> <incr><expr><name>i</name><operator>++</operator></expr></incr>)</control>
+         <block type="pseudo"><if>if <condition>(<expr><name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromRow</name> <operator>==</operator> <name>row</name> <operator>&amp;&amp;</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromCol</name> <operator>==</operator> <name>col</name></expr>)</condition><then> <block>{
+            <expr_stmt><expr><name>selectedRow</name> <operator>=</operator> <name>row</name></expr>;</expr_stmt>
+            <expr_stmt><expr><name>selectedCol</name> <operator>=</operator> <name>col</name></expr>;</expr_stmt>
+            <if>if <condition>(<expr><name>currentPlayer</name> <operator>==</operator> <name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr>)</condition><then>
+               <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"RED:  Make your move."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then>
+            <else>else
+               <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"BLACK:  Make your move."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></else></if>
+            <expr_stmt><expr><call><name>repaint</name><argument_list>()</argument_list></call></expr>;</expr_stmt>
+            <return>return;</return>
+         }</block></then></if></block></for>
+
+      <comment type="block">/* If no piece has been selected to be moved, the user must first
+         select a piece.  Show an error message and return. */</comment>
+
+      <if>if <condition>(<expr><name>selectedRow</name> <operator>&lt;</operator> <literal type="number">0</literal></expr>)</condition><then> <block>{
+          <expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"Click the piece you want to move."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+          <return>return;</return>
+      }</block></then></if>
+
+      <comment type="block">/* If the user clicked on a squre where the selected piece can be
+         legally moved, then make the move and return. */</comment>
+
+      <for>for <control>(<init><decl><type><name>int</name></type> <name>i</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>i</name> <operator>&lt;</operator> <name><name>legalMoves</name><operator>.</operator><name>length</name></name></expr>;</condition> <incr><expr><name>i</name><operator>++</operator></expr></incr>)</control>
+         <block type="pseudo"><if>if <condition>(<expr><name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromRow</name> <operator>==</operator> <name>selectedRow</name> <operator>&amp;&amp;</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromCol</name> <operator>==</operator> <name>selectedCol</name>
+                 <operator>&amp;&amp;</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>toRow</name> <operator>==</operator> <name>row</name> <operator>&amp;&amp;</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>toCol</name> <operator>==</operator> <name>col</name></expr>)</condition><then> <block>{
+            <expr_stmt><expr><call><name>doMakeMove</name><argument_list>(<argument><expr><name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+            <return>return;</return>
+         }</block></then></if></block></for>
+
+      <comment type="block">/* If we get to this point, there is a piece selected, and the square where
+         the user just clicked is not one where that piece can be legally moved.
+         Show an error message. */</comment>
+
+      <expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"Click the square you want to move to."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+   }</block></function>  <comment type="line">// end doClickSquare()</comment>
+
+
+   <function><type><name>void</name></type> <name>doMakeMove</name><parameter_list>(<parameter><decl><type><name>CheckersMove</name></type> <name>move</name></decl></parameter>)</parameter_list> <block>{
+          <comment type="line">// Thiis is called when the current player has chosen the specified</comment>
+          <comment type="line">// move.  Make the move, and then either end or continue the game</comment>
+          <comment type="line">// appropriately.</comment>
+
+      <expr_stmt><expr><call><name><name>board</name><operator>.</operator><name>makeMove</name></name><argument_list>(<argument><expr><name>move</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+      <comment type="block">/* If the move was a jump, it's possible that the player has another
+         jump.  Check for legal jumps starting from the square that the player
+         just moved to.  If there are any, the player must jump.  The same
+         player continues moving.
+      */</comment>
+
+      <if>if <condition>(<expr><call><name><name>move</name><operator>.</operator><name>isJump</name></name><argument_list>()</argument_list></call></expr>)</condition><then> <block>{
+         <expr_stmt><expr><name>legalMoves</name> <operator>=</operator> <call><name><name>board</name><operator>.</operator><name>getLegalJumpsFrom</name></name><argument_list>(<argument><expr><name>currentPlayer</name></expr></argument>,<argument><expr><name><name>move</name><operator>.</operator><name>toRow</name></name></expr></argument>,<argument><expr><name><name>move</name><operator>.</operator><name>toCol</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+         <if>if <condition>(<expr><name>legalMoves</name> <operator>!=</operator> <literal type="null">null</literal></expr>)</condition><then> <block>{
+            <if>if <condition>(<expr><name>currentPlayer</name> <operator>==</operator> <name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr>)</condition><then>
+               <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"RED:  You must continue jumping."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then>
+            <else>else
+               <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"BLACK:  You must continue jumping."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></else></if>
+            <expr_stmt><expr><name>selectedRow</name> <operator>=</operator> <name><name>move</name><operator>.</operator><name>toRow</name></name></expr>;</expr_stmt>  <comment type="line">// Since only one piece can be moved, select it.</comment>
+            <expr_stmt><expr><name>selectedCol</name> <operator>=</operator> <name><name>move</name><operator>.</operator><name>toCol</name></name></expr>;</expr_stmt>
+            <expr_stmt><expr><call><name>repaint</name><argument_list>()</argument_list></call></expr>;</expr_stmt>
+            <return>return;</return>
+         }</block></then></if>
+      }</block></then></if>
+
+      <comment type="block">/* The current player's turn is ended, so change to the other player.
+         Get that player's legal moves.  If the player has no legal moves,
+         then the game ends. */</comment>
+
+      <if>if <condition>(<expr><name>currentPlayer</name> <operator>==</operator> <name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr>)</condition><then> <block>{
+         <expr_stmt><expr><name>currentPlayer</name> <operator>=</operator> <name><name>CheckersData</name><operator>.</operator><name>BLACK</name></name></expr>;</expr_stmt>
+         <expr_stmt><expr><name>legalMoves</name> <operator>=</operator> <call><name><name>board</name><operator>.</operator><name>getLegalMoves</name></name><argument_list>(<argument><expr><name>currentPlayer</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+         <if>if <condition>(<expr><name>legalMoves</name> <operator>==</operator> <literal type="null">null</literal></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name>gameOver</name><argument_list>(<argument><expr><literal type="string">"BLACK has no moves.  RED wins."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then>
+         <elseif>else <if>if <condition>(<expr><name><name>legalMoves</name><index>[<expr><literal type="number">0</literal></expr>]</index></name><operator>.</operator><call><name>isJump</name><argument_list>()</argument_list></call></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"BLACK:  Make your move.  You must jump."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if></elseif>
+         <else>else
+            <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"BLACK:  Make your move."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></else></if>
+      }</block></then>
+      <else>else <block>{
+         <expr_stmt><expr><name>currentPlayer</name> <operator>=</operator> <name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr>;</expr_stmt>
+         <expr_stmt><expr><name>legalMoves</name> <operator>=</operator> <call><name><name>board</name><operator>.</operator><name>getLegalMoves</name></name><argument_list>(<argument><expr><name>currentPlayer</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+         <if>if <condition>(<expr><name>legalMoves</name> <operator>==</operator> <literal type="null">null</literal></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name>gameOver</name><argument_list>(<argument><expr><literal type="string">"RED has no moves.  BLACK wins."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then>
+         <elseif>else <if>if <condition>(<expr><name><name>legalMoves</name><index>[<expr><literal type="number">0</literal></expr>]</index></name><operator>.</operator><call><name>isJump</name><argument_list>()</argument_list></call></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"RED:  Make your move.  You must jump."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if></elseif>
+         <else>else
+            <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"RED:  Make your move."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></else></if>
+      }</block></else></if>
+
+      <comment type="block">/* Set selectedRow = -1 to record that the player has not yet selected
+          a piece to move. */</comment>
+
+      <expr_stmt><expr><name>selectedRow</name> <operator>=</operator> <operator>-</operator><literal type="number">1</literal></expr>;</expr_stmt>
+
+      <comment type="block">/* As a courtesy to the user, if all legal moves use the same piece, then
+         select that piece automatically so the use won't have to click on it
+         to select it. */</comment>
+
+      <if>if <condition>(<expr><name>legalMoves</name> <operator>!=</operator> <literal type="null">null</literal></expr>)</condition><then> <block>{
+         <decl_stmt><decl><type><name>boolean</name></type> <name>sameStartSquare</name> <init>= <expr><literal type="boolean">true</literal></expr></init></decl>;</decl_stmt>
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>i</name> <init>= <expr><literal type="number">1</literal></expr></init></decl>;</init> <condition><expr><name>i</name> <operator>&lt;</operator> <name><name>legalMoves</name><operator>.</operator><name>length</name></name></expr>;</condition> <incr><expr><name>i</name><operator>++</operator></expr></incr>)</control>
+            <block type="pseudo"><if>if <condition>(<expr><name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromRow</name> <operator>!=</operator> <name><name>legalMoves</name><index>[<expr><literal type="number">0</literal></expr>]</index></name><operator>.</operator><name>fromRow</name>
+                                 <operator>||</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromCol</name> <operator>!=</operator> <name><name>legalMoves</name><index>[<expr><literal type="number">0</literal></expr>]</index></name><operator>.</operator><name>fromCol</name></expr>)</condition><then> <block>{
+                <expr_stmt><expr><name>sameStartSquare</name> <operator>=</operator> <literal type="boolean">false</literal></expr>;</expr_stmt>
+                <break>break;</break>
+            }</block></then></if></block></for>
+         <if>if <condition>(<expr><name>sameStartSquare</name></expr>)</condition><then> <block>{
+            <expr_stmt><expr><name>selectedRow</name> <operator>=</operator> <name><name>legalMoves</name><index>[<expr><literal type="number">0</literal></expr>]</index></name><operator>.</operator><name>fromRow</name></expr>;</expr_stmt>
+            <expr_stmt><expr><name>selectedCol</name> <operator>=</operator> <name><name>legalMoves</name><index>[<expr><literal type="number">0</literal></expr>]</index></name><operator>.</operator><name>fromCol</name></expr>;</expr_stmt>
+         }</block></then></if>
+      }</block></then></if>
+
+      <comment type="block">/* Make sure the board is redrawn in its new state. */</comment>
+
+      <expr_stmt><expr><call><name>repaint</name><argument_list>()</argument_list></call></expr>;</expr_stmt>
+
+   }</block></function>  <comment type="line">// end doMakeMove();</comment>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>update</name><parameter_list>(<parameter><decl><type><name>Graphics</name></type> <name>g</name></decl></parameter>)</parameter_list> <block>{
+        <comment type="line">// The paint method completely redraws the canvas, so don't erase</comment>
+        <comment type="line">// before calling paint().</comment>
+      <expr_stmt><expr><call><name>paint</name><argument_list>(<argument><expr><name>g</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>paint</name><parameter_list>(<parameter><decl><type><name>Graphics</name></type> <name>g</name></decl></parameter>)</parameter_list> <block>{
+        <comment type="line">// Draw  checkerboard pattern in gray and lightGray.  Draw the</comment>
+        <comment type="line">// checkers.  If a game is in progress, hilite the legal moves.</comment>
+
+      <comment type="block">/* Draw a two-pixel black border around the edges of the canvas. */</comment>
+
+      <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>black</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawRect</name></name><argument_list>(<argument><expr><literal type="number">0</literal></expr></argument>,<argument><expr><literal type="number">0</literal></expr></argument>,<argument><expr><call><name>getSize</name><argument_list>()</argument_list></call><operator>.</operator><name>width</name><operator>-</operator><literal type="number">1</literal></expr></argument>,<argument><expr><call><name>getSize</name><argument_list>()</argument_list></call><operator>.</operator><name>height</name><operator>-</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawRect</name></name><argument_list>(<argument><expr><literal type="number">1</literal></expr></argument>,<argument><expr><literal type="number">1</literal></expr></argument>,<argument><expr><call><name>getSize</name><argument_list>()</argument_list></call><operator>.</operator><name>width</name><operator>-</operator><literal type="number">3</literal></expr></argument>,<argument><expr><call><name>getSize</name><argument_list>()</argument_list></call><operator>.</operator><name>height</name><operator>-</operator><literal type="number">3</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+      <comment type="block">/* Draw the squares of the checkerboard and the checkers. */</comment>
+
+      <for>for <control>(<init><decl><type><name>int</name></type> <name>row</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>row</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>row</name><operator>++</operator></expr></incr>)</control> <block>{
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>col</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>col</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>col</name><operator>++</operator></expr></incr>)</control> <block>{
+             <if>if <condition>( <expr><name>row</name> <operator>%</operator> <literal type="number">2</literal> <operator>==</operator> <name>col</name> <operator>%</operator> <literal type="number">2</literal></expr> )</condition><then>
+                <block type="pseudo"><expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>lightGray</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then>
+             <else>else
+                <block type="pseudo"><expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>gray</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></else></if>
+             <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>fillRect</name></name><argument_list>(<argument><expr><literal type="number">2</literal> <operator>+</operator> <name>col</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">2</literal> <operator>+</operator> <name>row</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">20</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+             <switch>switch <condition>(<expr><call><name><name>board</name><operator>.</operator><name>pieceAt</name></name><argument_list>(<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>)</argument_list></call></expr>)</condition> <block>{
+                <case>case <expr><name><name>CheckersData</name><operator>.</operator><name>RED</name></name></expr>:</case>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>red</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>fillOval</name></name><argument_list>(<argument><expr><literal type="number">4</literal> <operator>+</operator> <name>col</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">4</literal> <operator>+</operator> <name>row</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <break>break;</break>
+                <case>case <expr><name><name>CheckersData</name><operator>.</operator><name>BLACK</name></name></expr>:</case>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>black</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>fillOval</name></name><argument_list>(<argument><expr><literal type="number">4</literal> <operator>+</operator> <name>col</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">4</literal> <operator>+</operator> <name>row</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <break>break;</break>
+                <case>case <expr><name><name>CheckersData</name><operator>.</operator><name>RED_KING</name></name></expr>:</case>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>red</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>fillOval</name></name><argument_list>(<argument><expr><literal type="number">4</literal> <operator>+</operator> <name>col</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">4</literal> <operator>+</operator> <name>row</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>white</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawString</name></name><argument_list>(<argument><expr><literal type="string">"K"</literal></expr></argument>, <argument><expr><literal type="number">7</literal> <operator>+</operator> <name>col</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">16</literal> <operator>+</operator> <name>row</name><operator>*</operator><literal type="number">20</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <break>break;</break>
+                <case>case <expr><name><name>CheckersData</name><operator>.</operator><name>BLACK_KING</name></name></expr>:</case>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>black</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>fillOval</name></name><argument_list>(<argument><expr><literal type="number">4</literal> <operator>+</operator> <name>col</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">4</literal> <operator>+</operator> <name>row</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>, <argument><expr><literal type="number">16</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>white</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawString</name></name><argument_list>(<argument><expr><literal type="string">"K"</literal></expr></argument>, <argument><expr><literal type="number">7</literal> <operator>+</operator> <name>col</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">16</literal> <operator>+</operator> <name>row</name><operator>*</operator><literal type="number">20</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+                   <break>break;</break>
+             }</block></switch>
+         }</block></for>
+      }</block></for>
+
+      <comment type="block">/* If a game is in progress, hilite the legal moves.   Note that legalMoves
+         is never null while a game is in progress. */</comment>
+
+      <if>if <condition>(<expr><name>gameInProgress</name></expr>)</condition><then> <block>{
+            <comment type="line">// First, draw a cyan border around the pieces that can be moved.</comment>
+         <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>cyan</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>i</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>i</name> <operator>&lt;</operator> <name><name>legalMoves</name><operator>.</operator><name>length</name></name></expr>;</condition> <incr><expr><name>i</name><operator>++</operator></expr></incr>)</control> <block>{
+            <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawRect</name></name><argument_list>(<argument><expr><literal type="number">2</literal> <operator>+</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromCol</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">2</literal> <operator>+</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromRow</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">19</literal></expr></argument>, <argument><expr><literal type="number">19</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+         }</block></for>
+            <comment type="line">// If a piece is selected for moving (i.e. if selectedRow &gt;= 0), then</comment>
+            <comment type="line">// draw a 2-pixel white border around that piece and draw green borders</comment>
+            <comment type="line">// around eacj square that that piece can be moved to.</comment>
+         <if>if <condition>(<expr><name>selectedRow</name> <operator>&gt;=</operator> <literal type="number">0</literal></expr>)</condition><then> <block>{
+            <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>white</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+            <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawRect</name></name><argument_list>(<argument><expr><literal type="number">2</literal> <operator>+</operator> <name>selectedCol</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">2</literal> <operator>+</operator> <name>selectedRow</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">19</literal></expr></argument>, <argument><expr><literal type="number">19</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+            <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawRect</name></name><argument_list>(<argument><expr><literal type="number">3</literal> <operator>+</operator> <name>selectedCol</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">3</literal> <operator>+</operator> <name>selectedRow</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">17</literal></expr></argument>, <argument><expr><literal type="number">17</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+            <expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>setColor</name></name><argument_list>(<argument><expr><name><name>Color</name><operator>.</operator><name>green</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+            <for>for <control>(<init><decl><type><name>int</name></type> <name>i</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>i</name> <operator>&lt;</operator> <name><name>legalMoves</name><operator>.</operator><name>length</name></name></expr>;</condition> <incr><expr><name>i</name><operator>++</operator></expr></incr>)</control> <block>{
+               <if>if <condition>(<expr><name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromCol</name> <operator>==</operator> <name>selectedCol</name> <operator>&amp;&amp;</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>fromRow</name> <operator>==</operator> <name>selectedRow</name></expr>)</condition><then>
+                  <block type="pseudo"><expr_stmt><expr><call><name><name>g</name><operator>.</operator><name>drawRect</name></name><argument_list>(<argument><expr><literal type="number">2</literal> <operator>+</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>toCol</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">2</literal> <operator>+</operator> <name><name>legalMoves</name><index>[<expr><name>i</name></expr>]</index></name><operator>.</operator><name>toRow</name><operator>*</operator><literal type="number">20</literal></expr></argument>, <argument><expr><literal type="number">19</literal></expr></argument>, <argument><expr><literal type="number">19</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+            }</block></for>
+         }</block></then></if>
+      }</block></then></if>
+   }</block></function>  <comment type="line">// end paint()</comment>
+
+
+   <function><specifier>public</specifier> <type><name>Dimension</name></type> <name>getPreferredSize</name><parameter_list>()</parameter_list> <block>{
+         <comment type="line">// Specify desired size for this component.  Note:</comment>
+         <comment type="line">// the size MUST be 164 by 164.</comment>
+      <return>return <expr><operator>new</operator> <call><name>Dimension</name><argument_list>(<argument><expr><literal type="number">164</literal></expr></argument>, <argument><expr><literal type="number">164</literal></expr></argument>)</argument_list></call></expr>;</return>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name>Dimension</name></type> <name>getMinimumSize</name><parameter_list>()</parameter_list> <block>{
+      <return>return <expr><operator>new</operator> <call><name>Dimension</name><argument_list>(<argument><expr><literal type="number">164</literal></expr></argument>, <argument><expr><literal type="number">164</literal></expr></argument>)</argument_list></call></expr>;</return>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>mousePressed</name><parameter_list>(<parameter><decl><type><name>MouseEvent</name></type> <name>evt</name></decl></parameter>)</parameter_list> <block>{
+         <comment type="line">// Respond to a user click on the board.  If no game is</comment>
+         <comment type="line">// in progress, show an error message.  Otherwise, find</comment>
+         <comment type="line">// the row and column that the user clicked and call</comment>
+         <comment type="line">// doClickSquare() to handle it.</comment>
+      <if>if <condition>(<expr><name>gameInProgress</name> <operator>==</operator> <literal type="boolean">false</literal></expr>)</condition><then>
+         <block type="pseudo"><expr_stmt><expr><call><name><name>message</name><operator>.</operator><name>setText</name></name><argument_list>(<argument><expr><literal type="string">"Click \"New Game\" to start a new game."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then>
+      <else>else <block>{
+         <decl_stmt><decl><type><name>int</name></type> <name>col</name> <init>= <expr><operator>(</operator><call><name><name>evt</name><operator>.</operator><name>getX</name></name><argument_list>()</argument_list></call> <operator>-</operator> <literal type="number">2</literal><operator>)</operator> <operator>/</operator> <literal type="number">20</literal></expr></init></decl>;</decl_stmt>
+         <decl_stmt><decl><type><name>int</name></type> <name>row</name> <init>= <expr><operator>(</operator><call><name><name>evt</name><operator>.</operator><name>getY</name></name><argument_list>()</argument_list></call> <operator>-</operator> <literal type="number">2</literal><operator>)</operator> <operator>/</operator> <literal type="number">20</literal></expr></init></decl>;</decl_stmt>
+         <if>if <condition>(<expr><name>col</name> <operator>&gt;=</operator> <literal type="number">0</literal> <operator>&amp;&amp;</operator> <name>col</name> <operator>&lt;</operator> <literal type="number">8</literal> <operator>&amp;&amp;</operator> <name>row</name> <operator>&gt;=</operator> <literal type="number">0</literal> <operator>&amp;&amp;</operator> <name>row</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name>doClickSquare</name><argument_list>(<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+      }</block></else></if>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>mouseReleased</name><parameter_list>(<parameter><decl><type><name>MouseEvent</name></type> <name>evt</name></decl></parameter>)</parameter_list> <block>{ }</block></function>
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>mouseClicked</name><parameter_list>(<parameter><decl><type><name>MouseEvent</name></type> <name>evt</name></decl></parameter>)</parameter_list> <block>{ }</block></function>
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>mouseEntered</name><parameter_list>(<parameter><decl><type><name>MouseEvent</name></type> <name>evt</name></decl></parameter>)</parameter_list> <block>{ }</block></function>
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>mouseExited</name><parameter_list>(<parameter><decl><type><name>MouseEvent</name></type> <name>evt</name></decl></parameter>)</parameter_list> <block>{ }</block></function>
+
+
+}</block></class>  <comment type="line">// end class SimpleCheckerboardCanvas</comment>
+
+
+
+
+<class>class <name>CheckersMove</name> <block>{
+     <comment type="line">// A CheckersMove object represents a move in the game of Checkers.</comment>
+     <comment type="line">// It holds the row and column of the piece that is to be moved</comment>
+     <comment type="line">// and the row and column of the square to which it is to be moved.</comment>
+     <comment type="line">// (This class makes no guarantee that the move is legal.)</comment>
+   <decl_stmt><decl><type><name>int</name></type> <name>fromRow</name></decl>, <decl><type ref="prev"/><name>fromCol</name></decl>;</decl_stmt>  <comment type="line">// Position of piece to be moved.</comment>
+   <decl_stmt><decl><type><name>int</name></type> <name>toRow</name></decl>, <decl><type ref="prev"/><name>toCol</name></decl>;</decl_stmt>      <comment type="line">// Square it is to move to.</comment>
+   <constructor><name>CheckersMove</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>r1</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>c1</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>r2</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>c2</name></decl></parameter>)</parameter_list> <block>{
+        <comment type="line">// Constructor.  Just set the values of the instance variables.</comment>
+      <expr_stmt><expr><name>fromRow</name> <operator>=</operator> <name>r1</name></expr>;</expr_stmt>
+      <expr_stmt><expr><name>fromCol</name> <operator>=</operator> <name>c1</name></expr>;</expr_stmt>
+      <expr_stmt><expr><name>toRow</name> <operator>=</operator> <name>r2</name></expr>;</expr_stmt>
+      <expr_stmt><expr><name>toCol</name> <operator>=</operator> <name>c2</name></expr>;</expr_stmt>
+   }</block></constructor>
+   <function><type><name>boolean</name></type> <name>isJump</name><parameter_list>()</parameter_list> <block>{
+        <comment type="line">// Test whether this move is a jump.  It is assumed that</comment>
+        <comment type="line">// the move is legal.  In a jump, the piece moves two</comment>
+        <comment type="line">// rows.  (In a regular move, it only moves one row.)</comment>
+      <return>return <expr><operator>(</operator><name>fromRow</name> <operator>-</operator> <name>toRow</name> <operator>==</operator> <literal type="number">2</literal> <operator>||</operator> <name>fromRow</name> <operator>-</operator> <name>toRow</name> <operator>==</operator> <operator>-</operator><literal type="number">2</literal><operator>)</operator></expr>;</return>
+   }</block></function>
+}</block></class>  <comment type="line">// end class CheckersMove.</comment>
+
+
+
+
+<class>class <name>CheckersData</name> <block>{
+
+      <comment type="line">// An object of this class holds data about a game of checkers.</comment>
+      <comment type="line">// It knows what kind of piece is on each sqaure of the checkerboard.</comment>
+      <comment type="line">// Note that RED moves "up" the board (i.e. row number decreases)</comment>
+      <comment type="line">// while BLACK moves "down" the board (i.e. row number increases).</comment>
+      <comment type="line">// Methods are provided to return lists of available legal moves.</comment>
+
+   <comment type="block">/*  The following constants represent the possible contents of a square
+       on the board.  The constants RED and BLACK also represent players
+       in the game.
+   */</comment>
+
+   <decl_stmt><decl><specifier>public</specifier> <specifier>static</specifier> <type><specifier>final</specifier> <name>int</name></type>
+             <name>EMPTY</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>,
+             <decl><type ref="prev"/><name>RED</name> <init>= <expr><literal type="number">1</literal></expr></init></decl>,
+             <decl><type ref="prev"/><name>RED_KING</name> <init>= <expr><literal type="number">2</literal></expr></init></decl>,
+             <decl><type ref="prev"/><name>BLACK</name> <init>= <expr><literal type="number">3</literal></expr></init></decl>,
+             <decl><type ref="prev"/><name>BLACK_KING</name> <init>= <expr><literal type="number">4</literal></expr></init></decl>;</decl_stmt>
+
+   <decl_stmt><decl><specifier>private</specifier> <type><name><name>int</name><index>[]</index><index>[]</index></name></type> <name>board</name></decl>;</decl_stmt>  <comment type="line">// board[r][c] is the contents of row r, column c.</comment>
+
+
+   <constructor><specifier>public</specifier> <name>CheckersData</name><parameter_list>()</parameter_list> <block>{
+         <comment type="line">// Constructor.  Create the board and set it up for a new game.</comment>
+      <expr_stmt><expr><name>board</name> <operator>=</operator> <operator>new</operator> <name><name>int</name><index>[<expr><literal type="number">8</literal></expr>]</index><index>[<expr><literal type="number">8</literal></expr>]</index></name></expr>;</expr_stmt>
+      <expr_stmt><expr><call><name>setUpGame</name><argument_list>()</argument_list></call></expr>;</expr_stmt>
+   }</block></constructor>
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>setUpGame</name><parameter_list>()</parameter_list> <block>{
+          <comment type="line">// Set up the board with checkers in position for the beginning</comment>
+          <comment type="line">// of a game.  Note that checkers can only be found in squares</comment>
+          <comment type="line">// that satisfy  row % 2 == col % 2.  At the start of the game,</comment>
+          <comment type="line">// all such squares in the first three rows contain black squares</comment>
+          <comment type="line">// and all such squares in the last three rows contain red squares.</comment>
+      <for>for <control>(<init><decl><type><name>int</name></type> <name>row</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>row</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>row</name><operator>++</operator></expr></incr>)</control> <block>{
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>col</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>col</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>col</name><operator>++</operator></expr></incr>)</control> <block>{
+            <if>if <condition>( <expr><name>row</name> <operator>%</operator> <literal type="number">2</literal> <operator>==</operator> <name>col</name> <operator>%</operator> <literal type="number">2</literal></expr> )</condition><then> <block>{
+               <if>if <condition>(<expr><name>row</name> <operator>&lt;</operator> <literal type="number">3</literal></expr>)</condition><then>
+                  <block type="pseudo"><expr_stmt><expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>=</operator> <name>BLACK</name></expr>;</expr_stmt></block></then>
+               <elseif>else <if>if <condition>(<expr><name>row</name> <operator>&gt;</operator> <literal type="number">4</literal></expr>)</condition><then>
+                  <block type="pseudo"><expr_stmt><expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>=</operator> <name>RED</name></expr>;</expr_stmt></block></then></if></elseif>
+               <else>else
+                  <block type="pseudo"><expr_stmt><expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>=</operator> <name>EMPTY</name></expr>;</expr_stmt></block></else></if>
+            }</block></then>
+            <else>else <block>{
+               <expr_stmt><expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>=</operator> <name>EMPTY</name></expr>;</expr_stmt>
+            }</block></else></if>
+         }</block></for>
+      }</block></for>
+   }</block></function>  <comment type="line">// end setUpGame()</comment>
+
+
+   <function><specifier>public</specifier> <type><name>int</name></type> <name>pieceAt</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>row</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>col</name></decl></parameter>)</parameter_list> <block>{
+          <comment type="line">// Return the contents of the square in the specified row and column.</comment>
+       <return>return <expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name></expr>;</return>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>setPieceAt</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>row</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>col</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>piece</name></decl></parameter>)</parameter_list> <block>{
+          <comment type="line">// Set the contents of the square in the specified row and column.</comment>
+          <comment type="line">// piece must be one of the constants EMPTY, RED, BLACK, RED_KING,</comment>
+          <comment type="line">// BLACK_KING.</comment>
+       <expr_stmt><expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>=</operator> <name>piece</name></expr>;</expr_stmt>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>makeMove</name><parameter_list>(<parameter><decl><type><name>CheckersMove</name></type> <name>move</name></decl></parameter>)</parameter_list> <block>{
+         <comment type="line">// Make the specified move.  It is assumed that move</comment>
+         <comment type="line">// is non-null and that the move it represents is legal.</comment>
+      <expr_stmt><expr><call><name>makeMove</name><argument_list>(<argument><expr><name><name>move</name><operator>.</operator><name>fromRow</name></name></expr></argument>, <argument><expr><name><name>move</name><operator>.</operator><name>fromCol</name></name></expr></argument>, <argument><expr><name><name>move</name><operator>.</operator><name>toRow</name></name></expr></argument>, <argument><expr><name><name>move</name><operator>.</operator><name>toCol</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name>void</name></type> <name>makeMove</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>fromRow</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>fromCol</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>toRow</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>toCol</name></decl></parameter>)</parameter_list> <block>{
+         <comment type="line">// Make the move from (fromRow,fromCol) to (toRow,toCol).  It is</comment>
+         <comment type="line">// assumed that this move is legal.  If the move is a jump, the</comment>
+         <comment type="line">// jumped piece is removed from the board.  If a piece moves</comment>
+         <comment type="line">// the last row on the opponent's side of the board, the</comment>
+         <comment type="line">// piece becomes a king.</comment>
+      <expr_stmt><expr><name><name>board</name><index>[<expr><name>toRow</name></expr>]</index><index>[<expr><name>toCol</name></expr>]</index></name> <operator>=</operator> <name><name>board</name><index>[<expr><name>fromRow</name></expr>]</index><index>[<expr><name>fromCol</name></expr>]</index></name></expr>;</expr_stmt>
+      <expr_stmt><expr><name><name>board</name><index>[<expr><name>fromRow</name></expr>]</index><index>[<expr><name>fromCol</name></expr>]</index></name> <operator>=</operator> <name>EMPTY</name></expr>;</expr_stmt>
+      <if>if <condition>(<expr><name>fromRow</name> <operator>-</operator> <name>toRow</name> <operator>==</operator> <literal type="number">2</literal> <operator>||</operator> <name>fromRow</name> <operator>-</operator> <name>toRow</name> <operator>==</operator> <operator>-</operator><literal type="number">2</literal></expr>)</condition><then> <block>{
+            <comment type="line">// The move is a jump.  Remove the jumped piece from the board.</comment>
+         <decl_stmt><decl><type><name>int</name></type> <name>jumpRow</name> <init>= <expr><operator>(</operator><name>fromRow</name> <operator>+</operator> <name>toRow</name><operator>)</operator> <operator>/</operator> <literal type="number">2</literal></expr></init></decl>;</decl_stmt>  <comment type="line">// Row of the jumped piece.</comment>
+         <decl_stmt><decl><type><name>int</name></type> <name>jumpCol</name> <init>= <expr><operator>(</operator><name>fromCol</name> <operator>+</operator> <name>toCol</name><operator>)</operator> <operator>/</operator> <literal type="number">2</literal></expr></init></decl>;</decl_stmt>  <comment type="line">// Column of the jumped piece.</comment>
+         <expr_stmt><expr><name><name>board</name><index>[<expr><name>jumpRow</name></expr>]</index><index>[<expr><name>jumpCol</name></expr>]</index></name> <operator>=</operator> <name>EMPTY</name></expr>;</expr_stmt>
+      }</block></then></if>
+      <if>if <condition>(<expr><name>toRow</name> <operator>==</operator> <literal type="number">0</literal> <operator>&amp;&amp;</operator> <name><name>board</name><index>[<expr><name>toRow</name></expr>]</index><index>[<expr><name>toCol</name></expr>]</index></name> <operator>==</operator> <name>RED</name></expr>)</condition><then>
+         <block type="pseudo"><expr_stmt><expr><name><name>board</name><index>[<expr><name>toRow</name></expr>]</index><index>[<expr><name>toCol</name></expr>]</index></name> <operator>=</operator> <name>RED_KING</name></expr>;</expr_stmt></block></then></if>
+      <if>if <condition>(<expr><name>toRow</name> <operator>==</operator> <literal type="number">7</literal> <operator>&amp;&amp;</operator> <name><name>board</name><index>[<expr><name>toRow</name></expr>]</index><index>[<expr><name>toCol</name></expr>]</index></name> <operator>==</operator> <name>BLACK</name></expr>)</condition><then>
+         <block type="pseudo"><expr_stmt><expr><name><name>board</name><index>[<expr><name>toRow</name></expr>]</index><index>[<expr><name>toCol</name></expr>]</index></name> <operator>=</operator> <name>BLACK_KING</name></expr>;</expr_stmt></block></then></if>
+   }</block></function>
+
+
+   <function><specifier>public</specifier> <type><name><name>CheckersMove</name><index>[]</index></name></type> <name>getLegalMoves</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>player</name></decl></parameter>)</parameter_list> <block>{
+          <comment type="line">// Return an array containing all the legal CheckersMoves</comment>
+          <comment type="line">// for the specfied player on the current board.  If the player</comment>
+          <comment type="line">// has no legal moves, null is returned.  The value of player</comment>
+          <comment type="line">// should be one of the constants RED or BLACK; if not, null</comment>
+          <comment type="line">// is returned.  If the returned value is non-null, it consists</comment>
+          <comment type="line">// entirely of jump moves or entirely of regular moves, since</comment>
+          <comment type="line">// if the player can jump, only jumps are legal moves.</comment>
+
+      <if>if <condition>(<expr><name>player</name> <operator>!=</operator> <name>RED</name> <operator>&amp;&amp;</operator> <name>player</name> <operator>!=</operator> <name>BLACK</name></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="null">null</literal></expr>;</return></block></then></if>
+
+      <decl_stmt><decl><type><name>int</name></type> <name>playerKing</name></decl>;</decl_stmt>  <comment type="line">// The constant representing a King belonging to player.</comment>
+      <if>if <condition>(<expr><name>player</name> <operator>==</operator> <name>RED</name></expr>)</condition><then>
+         <block type="pseudo"><expr_stmt><expr><name>playerKing</name> <operator>=</operator> <name>RED_KING</name></expr>;</expr_stmt></block></then>
+      <else>else
+         <block type="pseudo"><expr_stmt><expr><name>playerKing</name> <operator>=</operator> <name>BLACK_KING</name></expr>;</expr_stmt></block></else></if>
+
+      <decl_stmt><decl><type><name>Vector</name></type> <name>moves</name> <init>= <expr><operator>new</operator> <call><name>Vector</name><argument_list>()</argument_list></call></expr></init></decl>;</decl_stmt>  <comment type="line">// Moves will be stored in this vector.</comment>
+
+      <comment type="block">/*  First, check for any possible jumps.  Look at each square on the board.
+          If that square contains one of the player's pieces, look at a possible
+          jump in each of the four directions from that square.  If there is
+          a legal jump in that direction, put it in the moves vector.
+      */</comment>
+
+      <for>for <control>(<init><decl><type><name>int</name></type> <name>row</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>row</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>row</name><operator>++</operator></expr></incr>)</control> <block>{
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>col</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>col</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>col</name><operator>++</operator></expr></incr>)</control> <block>{
+            <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>==</operator> <name>player</name> <operator>||</operator> <name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>==</operator> <name>playerKing</name></expr>)</condition><then> <block>{
+               <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                  <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+               <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                  <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+               <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                  <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+               <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                  <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+            }</block></then></if>
+         }</block></for>
+      }</block></for>
+
+      <comment type="block">/*  If any jump moves were found, then the user must jump, so we don't
+          add any regular moves.  However, if no jumps were found, check for
+          any legal regualar moves.  Look at each square on the board.
+          If that square contains one of the player's pieces, look at a possible
+          move in each of the four directions from that square.  If there is
+          a legal move in that direction, put it in the moves vector.
+      */</comment>
+
+      <if>if <condition>(<expr><call><name><name>moves</name><operator>.</operator><name>size</name></name><argument_list>()</argument_list></call> <operator>==</operator> <literal type="number">0</literal></expr>)</condition><then> <block>{
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>row</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>row</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>row</name><operator>++</operator></expr></incr>)</control> <block>{
+            <for>for <control>(<init><decl><type><name>int</name></type> <name>col</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>col</name> <operator>&lt;</operator> <literal type="number">8</literal></expr>;</condition> <incr><expr><name>col</name><operator>++</operator></expr></incr>)</control> <block>{
+               <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>==</operator> <name>player</name> <operator>||</operator> <name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>==</operator> <name>playerKing</name></expr>)</condition><then> <block>{
+                  <if>if <condition>(<expr><call><name>canMove</name><argument_list>(<argument><expr><name>player</name></expr></argument>,<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                     <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+                  <if>if <condition>(<expr><call><name>canMove</name><argument_list>(<argument><expr><name>player</name></expr></argument>,<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                     <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+                  <if>if <condition>(<expr><call><name>canMove</name><argument_list>(<argument><expr><name>player</name></expr></argument>,<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                     <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+                  <if>if <condition>(<expr><call><name>canMove</name><argument_list>(<argument><expr><name>player</name></expr></argument>,<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+                     <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>,<argument><expr><name>col</name></expr></argument>,<argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>,<argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+               }</block></then></if>
+            }</block></for>
+         }</block></for>
+      }</block></then></if>
+
+      <comment type="block">/* If no legal moves have been found, return null.  Otherwise, create
+         an array just big enough to hold all the legal moves, copy the
+         legal moves from the vector into the array, and return the array. */</comment>
+
+      <if>if <condition>(<expr><call><name><name>moves</name><operator>.</operator><name>size</name></name><argument_list>()</argument_list></call> <operator>==</operator> <literal type="number">0</literal></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="null">null</literal></expr>;</return></block></then>
+      <else>else <block>{
+         <decl_stmt><decl><type><name><name>CheckersMove</name><index>[]</index></name></type> <name>moveArray</name> <init>= <expr><operator>new</operator> <name><name>CheckersMove</name><index>[<expr><call><name><name>moves</name><operator>.</operator><name>size</name></name><argument_list>()</argument_list></call></expr>]</index></name></expr></init></decl>;</decl_stmt>
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>i</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>i</name> <operator>&lt;</operator> <call><name><name>moves</name><operator>.</operator><name>size</name></name><argument_list>()</argument_list></call></expr>;</condition> <incr><expr><name>i</name><operator>++</operator></expr></incr>)</control>
+            <block type="pseudo"><expr_stmt><expr><name><name>moveArray</name><index>[<expr><name>i</name></expr>]</index></name> <operator>=</operator> <operator>(</operator><name>CheckersMove</name><operator>)</operator><call><name><name>moves</name><operator>.</operator><name>elementAt</name></name><argument_list>(<argument><expr><name>i</name></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></for>
+         <return>return <expr><name>moveArray</name></expr>;</return>
+      }</block></else></if>
+
+   }</block></function>  <comment type="line">// end getLegalMoves</comment>
+
+
+   <function><specifier>public</specifier> <type><name><name>CheckersMove</name><index>[]</index></name></type> <name>getLegalJumpsFrom</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>player</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>row</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>col</name></decl></parameter>)</parameter_list> <block>{
+         <comment type="line">// Return a list of the legal jumps that the specified player can</comment>
+         <comment type="line">// make starting from the specified row and column.  If no such</comment>
+         <comment type="line">// jumps are possible, null is returned.  The logic is similar</comment>
+         <comment type="line">// to the logic of the getLegalMoves() method.</comment>
+      <if>if <condition>(<expr><name>player</name> <operator>!=</operator> <name>RED</name> <operator>&amp;&amp;</operator> <name>player</name> <operator>!=</operator> <name>BLACK</name></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="null">null</literal></expr>;</return></block></then></if>
+      <decl_stmt><decl><type><name>int</name></type> <name>playerKing</name></decl>;</decl_stmt>  <comment type="line">// The constant representing a King belonging to player.</comment>
+      <if>if <condition>(<expr><name>player</name> <operator>==</operator> <name>RED</name></expr>)</condition><then>
+         <block type="pseudo"><expr_stmt><expr><name>playerKing</name> <operator>=</operator> <name>RED_KING</name></expr>;</expr_stmt></block></then>
+      <else>else
+         <block type="pseudo"><expr_stmt><expr><name>playerKing</name> <operator>=</operator> <name>BLACK_KING</name></expr>;</expr_stmt></block></else></if>
+      <decl_stmt><decl><type><name>Vector</name></type> <name>moves</name> <init>= <expr><operator>new</operator> <call><name>Vector</name><argument_list>()</argument_list></call></expr></init></decl>;</decl_stmt>  <comment type="line">// The legal jumps will be stored in this vector.</comment>
+      <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>==</operator> <name>player</name> <operator>||</operator> <name><name>board</name><index>[<expr><name>row</name></expr>]</index><index>[<expr><name>col</name></expr>]</index></name> <operator>==</operator> <name>playerKing</name></expr>)</condition><then> <block>{
+         <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+         <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>+</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+         <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>+</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+         <if>if <condition>(<expr><call><name>canJump</name><argument_list>(<argument><expr><name>player</name></expr></argument>, <argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">1</literal></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr>)</condition><then>
+            <block type="pseudo"><expr_stmt><expr><call><name><name>moves</name><operator>.</operator><name>addElement</name></name><argument_list>(<argument><expr><operator>new</operator> <call><name>CheckersMove</name><argument_list>(<argument><expr><name>row</name></expr></argument>, <argument><expr><name>col</name></expr></argument>, <argument><expr><name>row</name><operator>-</operator><literal type="number">2</literal></expr></argument>, <argument><expr><name>col</name><operator>-</operator><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></then></if>
+      }</block></then></if>
+      <if>if <condition>(<expr><call><name><name>moves</name><operator>.</operator><name>size</name></name><argument_list>()</argument_list></call> <operator>==</operator> <literal type="number">0</literal></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="null">null</literal></expr>;</return></block></then>
+      <else>else <block>{
+         <decl_stmt><decl><type><name><name>CheckersMove</name><index>[]</index></name></type> <name>moveArray</name> <init>= <expr><operator>new</operator> <name><name>CheckersMove</name><index>[<expr><call><name><name>moves</name><operator>.</operator><name>size</name></name><argument_list>()</argument_list></call></expr>]</index></name></expr></init></decl>;</decl_stmt>
+         <for>for <control>(<init><decl><type><name>int</name></type> <name>i</name> <init>= <expr><literal type="number">0</literal></expr></init></decl>;</init> <condition><expr><name>i</name> <operator>&lt;</operator> <call><name><name>moves</name><operator>.</operator><name>size</name></name><argument_list>()</argument_list></call></expr>;</condition> <incr><expr><name>i</name><operator>++</operator></expr></incr>)</control>
+            <block type="pseudo"><expr_stmt><expr><name><name>moveArray</name><index>[<expr><name>i</name></expr>]</index></name> <operator>=</operator> <operator>(</operator><name>CheckersMove</name><operator>)</operator><call><name><name>moves</name><operator>.</operator><name>elementAt</name></name><argument_list>(<argument><expr><name>i</name></expr></argument>)</argument_list></call></expr>;</expr_stmt></block></for>
+         <return>return <expr><name>moveArray</name></expr>;</return>
+      }</block></else></if>
+   }</block></function>  <comment type="line">// end getLegalMovesFrom()</comment>
+
+
+   <function><specifier>private</specifier> <type><name>boolean</name></type> <name>canJump</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>player</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>r1</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>c1</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>r2</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>c2</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>r3</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>c3</name></decl></parameter>)</parameter_list> <block>{
+           <comment type="line">// This is called by the two previous methods to check whether the</comment>
+           <comment type="line">// player can legally jump from (r1,c1) to (r3,c3).  It is assumed</comment>
+           <comment type="line">// that the player has a piece at (r1,c1), that (r3,c3) is a position</comment>
+           <comment type="line">// that is 2 rows and 2 columns distant from (r1,c1) and that</comment>
+           <comment type="line">// (r2,c2) is the square between (r1,c1) and (r3,c3).</comment>
+
+      <if>if <condition>(<expr><name>r3</name> <operator>&lt;</operator> <literal type="number">0</literal> <operator>||</operator> <name>r3</name> <operator>&gt;=</operator> <literal type="number">8</literal> <operator>||</operator> <name>c3</name> <operator>&lt;</operator> <literal type="number">0</literal> <operator>||</operator> <name>c3</name> <operator>&gt;=</operator> <literal type="number">8</literal></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// (r3,c3) is off the board.</comment>
+
+      <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r3</name></expr>]</index><index>[<expr><name>c3</name></expr>]</index></name> <operator>!=</operator> <name>EMPTY</name></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// (r3,c3) already contains a piece.</comment>
+
+      <if>if <condition>(<expr><name>player</name> <operator>==</operator> <name>RED</name></expr>)</condition><then> <block>{
+         <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r1</name></expr>]</index><index>[<expr><name>c1</name></expr>]</index></name> <operator>==</operator> <name>RED</name> <operator>&amp;&amp;</operator> <name>r3</name> <operator>&gt;</operator> <name>r1</name></expr>)</condition><then>
+            <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// Regular red piece can only move  up.</comment>
+         <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r2</name></expr>]</index><index>[<expr><name>c2</name></expr>]</index></name> <operator>!=</operator> <name>BLACK</name> <operator>&amp;&amp;</operator> <name><name>board</name><index>[<expr><name>r2</name></expr>]</index><index>[<expr><name>c2</name></expr>]</index></name> <operator>!=</operator> <name>BLACK_KING</name></expr>)</condition><then>
+            <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// There is no black piece to jump.</comment>
+         <return>return <expr><literal type="boolean">true</literal></expr>;</return>  <comment type="line">// The jump is legal.</comment>
+      }</block></then>
+      <else>else <block>{
+         <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r1</name></expr>]</index><index>[<expr><name>c1</name></expr>]</index></name> <operator>==</operator> <name>BLACK</name> <operator>&amp;&amp;</operator> <name>r3</name> <operator>&lt;</operator> <name>r1</name></expr>)</condition><then>
+            <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// Regular black piece can only move downn.</comment>
+         <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r2</name></expr>]</index><index>[<expr><name>c2</name></expr>]</index></name> <operator>!=</operator> <name>RED</name> <operator>&amp;&amp;</operator> <name><name>board</name><index>[<expr><name>r2</name></expr>]</index><index>[<expr><name>c2</name></expr>]</index></name> <operator>!=</operator> <name>RED_KING</name></expr>)</condition><then>
+            <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// There is no red piece to jump.</comment>
+         <return>return <expr><literal type="boolean">true</literal></expr>;</return>  <comment type="line">// The jump is legal.</comment>
+      }</block></else></if>
+
+   }</block></function>  <comment type="line">// end canJump()</comment>
+
+
+   <function><specifier>private</specifier> <type><name>boolean</name></type> <name>canMove</name><parameter_list>(<parameter><decl><type><name>int</name></type> <name>player</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>r1</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>c1</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>r2</name></decl></parameter>, <parameter><decl><type><name>int</name></type> <name>c2</name></decl></parameter>)</parameter_list> <block>{
+         <comment type="line">// This is called by the getLegalMoves() method to determine whether</comment>
+         <comment type="line">// the player can legally move from (r1,c1) to (r2,c2).  It is</comment>
+         <comment type="line">// assumed that (r1,r2) contains one of the player's pieces and</comment>
+         <comment type="line">// that (r2,c2) is a neighboring square.</comment>
+
+      <if>if <condition>(<expr><name>r2</name> <operator>&lt;</operator> <literal type="number">0</literal> <operator>||</operator> <name>r2</name> <operator>&gt;=</operator> <literal type="number">8</literal> <operator>||</operator> <name>c2</name> <operator>&lt;</operator> <literal type="number">0</literal> <operator>||</operator> <name>c2</name> <operator>&gt;=</operator> <literal type="number">8</literal></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// (r2,c2) is off the board.</comment>
+
+      <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r2</name></expr>]</index><index>[<expr><name>c2</name></expr>]</index></name> <operator>!=</operator> <name>EMPTY</name></expr>)</condition><then>
+         <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// (r2,c2) already contains a piece.</comment>
+
+      <if>if <condition>(<expr><name>player</name> <operator>==</operator> <name>RED</name></expr>)</condition><then> <block>{
+         <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r1</name></expr>]</index><index>[<expr><name>c1</name></expr>]</index></name> <operator>==</operator> <name>RED</name> <operator>&amp;&amp;</operator> <name>r2</name> <operator>&gt;</operator> <name>r1</name></expr>)</condition><then>
+             <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// Regualr red piece can only move down.</comment>
+          <return>return <expr><literal type="boolean">true</literal></expr>;</return>  <comment type="line">// The move is legal.</comment>
+      }</block></then>
+      <else>else <block>{
+         <if>if <condition>(<expr><name><name>board</name><index>[<expr><name>r1</name></expr>]</index><index>[<expr><name>c1</name></expr>]</index></name> <operator>==</operator> <name>BLACK</name> <operator>&amp;&amp;</operator> <name>r2</name> <operator>&lt;</operator> <name>r1</name></expr>)</condition><then>
+             <block type="pseudo"><return>return <expr><literal type="boolean">false</literal></expr>;</return></block></then></if>  <comment type="line">// Regular black piece can only move up.</comment>
+          <return>return <expr><literal type="boolean">true</literal></expr>;</return>  <comment type="line">// The move is legal.</comment>
+      }</block></else></if>
+
+   }</block></function>  <comment type="line">// end canMove()</comment>
+
+
+}</block></class> <comment type="line">// end class CheckersData</comment>
+</unit>

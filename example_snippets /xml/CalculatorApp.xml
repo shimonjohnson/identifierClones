@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" revision="0.9.5" language="Java" filename="CalculatorApp.java"><package>package <name><name>rit</name><operator>.</operator><name>calculator</name></name>;</package>
+
+<comment type="block" format="javadoc">/**
+ * The main class to test the {@code BinaryOperation} subsystem.
+ *
+ * @author &lt;a href='mailto:bdbvse@rit.edu'&gt;Bryan Basham&lt;/a&gt;
+ */</comment>
+<class><specifier>public</specifier> class <name>CalculatorApp</name> <block>{
+
+  <function><specifier>public</specifier> <specifier>static</specifier> <type><name>void</name></type> <name>main</name><parameter_list>(<parameter><decl><type><name><name>String</name><index>[]</index></name></type> <name>args</name></decl></parameter>)</parameter_list> <block>{
+    <comment type="line">// create a calculation</comment>
+    <decl_stmt><decl><type><specifier>final</specifier> <name>double</name></type> <name>sideA</name> <init>= <expr><literal type="number">3</literal></expr></init></decl>;</decl_stmt>
+    <decl_stmt><decl><type><specifier>final</specifier> <name>double</name></type> <name>sideB</name> <init>= <expr><literal type="number">4</literal></expr></init></decl>;</decl_stmt>
+    <decl_stmt><decl><type><name>BinaryOperation</name></type> <name>pythagoreanCalculation</name> <init>=
+        <expr><operator>new</operator> <call><name>BinaryOperation</name><argument_list>(<argument><expr><operator>new</operator> <call><name>PowerOperator</name><argument_list>()</argument_list></call></expr></argument>,
+            <comment type="line">// Square root of</comment>
+            <argument><expr><operator>new</operator> <call><name>BinaryOperation</name><argument_list>(<argument><expr><operator>new</operator> <call><name>AddOperator</name><argument_list>()</argument_list></call></expr></argument>,
+                <comment type="line">// A^2 + B^2</comment>
+                <argument><expr><operator>new</operator> <call><name>BinaryOperation</name><argument_list>(<argument><expr><operator>new</operator> <call><name>PowerOperator</name><argument_list>()</argument_list></call></expr></argument>, <argument><expr><name>sideA</name></expr></argument>, <argument><expr><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>,
+                <argument><expr><operator>new</operator> <call><name>BinaryOperation</name><argument_list>(<argument><expr><operator>new</operator> <call><name>PowerOperator</name><argument_list>()</argument_list></call></expr></argument>, <argument><expr><name>sideB</name></expr></argument>, <argument><expr><literal type="number">2</literal></expr></argument>)</argument_list></call></expr></argument>)</argument_list></call></expr></argument>,
+            <argument><expr><literal type="number">0.5</literal></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+
+    <decl_stmt><decl><type><specifier>final</specifier> <name>double</name></type> <name>sideC</name> <init>= <expr><call><name><name>pythagoreanCalculation</name><operator>.</operator><name>getResult</name></name><argument_list>()</argument_list></call></expr></init></decl>;</decl_stmt>
+    <if>if <condition>(<expr><call><name><name>Math</name><operator>.</operator><name>abs</name></name><argument_list>(<argument><expr><name>sideC</name> <operator>-</operator> <literal type="number">5</literal></expr></argument>)</argument_list></call> <operator>&lt;</operator> <literal type="number">0.001</literal></expr>)</condition><then> <block>{
+      <expr_stmt><expr><call><name><name>System</name><operator>.</operator><name>out</name><operator>.</operator><name>println</name></name><argument_list>(<argument><expr><literal type="string">"Pythagorean's theoreom works!  sideC = "</literal> <operator>+</operator> <name>sideC</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+    }</block></then> <else>else <block>{
+      <expr_stmt><expr><call><name><name>System</name><operator>.</operator><name>err</name><operator>.</operator><name>println</name></name><argument_list>(<argument><expr><literal type="string">"Doh!"</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+    }</block></else></if>
+  }</block></function>
+}</block></class>
+</unit>

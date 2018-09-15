@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" revision="0.9.5" language="Java" filename="Application.java"><package>package <name><name>rit</name><operator>.</operator><name>subsystem</name></name>;</package>
+
+<import>import <name><name>java</name><operator>.</operator><name>util</name><operator>.</operator><name>Map</name></name>;</import>
+
+<comment type="block" format="javadoc">/**
+ * A sample of using the {@linkplain Arguments arguments subsystem}.
+ *
+ * @author &lt;a href='mailto:bdbvse@rit.edu'&gt;Bryan Basham&lt;/a&gt;
+ */</comment>
+<class><specifier>public</specifier> class <name>Application</name> <block>{
+
+  <decl_stmt><decl><specifier>private</specifier> <specifier>static</specifier> <type><specifier>final</specifier> <name>int</name></type> <name>MIN_SIZE</name> <init>= <expr><literal type="number">5</literal></expr></init></decl>;</decl_stmt>
+  <decl_stmt><decl><specifier>private</specifier> <specifier>static</specifier> <type><specifier>final</specifier> <name>String</name></type> <name>USAGE</name> <init>= <expr><literal type="string">"Application &lt;NAME&gt; [&lt;EMAIL_ADDR&gt;] &lt;PROFILE_FILE&gt;"</literal></expr></init></decl>;</decl_stmt>
+
+  <function><specifier>public</specifier> <specifier>static</specifier> <type><name>void</name></type> <name>main</name><parameter_list>(<parameter><decl><type><name><name>String</name><index>[]</index></name></type> <name>args</name></decl></parameter>)</parameter_list> <block>{
+    <decl_stmt><decl><type><specifier>final</specifier> <name>Argument</name></type> <name>name</name> <init>= <expr><operator>new</operator> <call><name>StringArgument</name><argument_list>(<argument><expr><literal type="string">"NAME"</literal></expr></argument>, <argument><expr><literal type="boolean">true</literal></expr></argument>, <argument><expr><name>MIN_SIZE</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+    <decl_stmt><decl><type><specifier>final</specifier> <name>Argument</name></type> <name>emailAddr</name> <init>= <expr><operator>new</operator> <call><name>EmailArgument</name><argument_list>(<argument><expr><literal type="string">"EMAIL_ADDR"</literal></expr></argument>, <argument><expr><literal type="boolean">false</literal></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+    <decl_stmt><decl><type><specifier>final</specifier> <name>Argument</name></type> <name>profileFile</name> <init>= <expr><operator>new</operator> <call><name>FileArgument</name><argument_list>(<argument><expr><literal type="string">"PROFILE_FILE"</literal></expr></argument>, <argument><expr><literal type="boolean">true</literal></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+    <decl_stmt><decl><type><specifier>final</specifier> <name>Arguments</name></type> <name>myArgs</name> <init>= <expr><operator>new</operator> <call><name>Arguments</name><argument_list>(<argument><expr><name>name</name></expr></argument>, <argument><expr><name>emailAddr</name></expr></argument>, <argument><expr><name>profileFile</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+
+    <try>try <block>{
+      <decl_stmt><decl><type><specifier>final</specifier> <name><name>Map</name><argument_list type="generic">&lt;<argument><name>String</name></argument>, <argument><name>Object</name></argument>&gt;</argument_list></name></type> <name>argMap</name> <init>= <expr><call><name><name>myArgs</name><operator>.</operator><name>parse</name></name><argument_list>(<argument><expr><name>args</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+      <expr_stmt><expr><call><name><name>System</name><operator>.</operator><name>out</name><operator>.</operator><name>println</name></name><argument_list>(<argument><expr><literal type="string">"argMap: "</literal> <operator>+</operator> <name>argMap</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+    }</block> <catch>catch <parameter_list>(<parameter><decl><type><name>Exception</name></type> <name>e</name></decl></parameter>)</parameter_list> <block>{
+      <expr_stmt><expr><call><name><name>System</name><operator>.</operator><name>out</name><operator>.</operator><name>println</name></name><argument_list>(<argument><expr><name>USAGE</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <throw>throw <expr><name>e</name></expr>;</throw>
+    }</block></catch></try>
+  }</block></function>
+}</block></class>
+</unit>
