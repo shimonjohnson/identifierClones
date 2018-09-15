@@ -17,9 +17,9 @@ for type_tag in allNames:
     list.append(identifier)
 
 
-print ("The indentifers are as follows\n\n\n"+str(list2))
+print ("The indentifers are as follows\n\n"+str(list2))
 
-print ("The indentifers statements are as follows\n\n\n")
+print ("The indentifers statements are as follows\n")
 
 
 infileProgram = open("current_work_snips/Mail.java","r")
