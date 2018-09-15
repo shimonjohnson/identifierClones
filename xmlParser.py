@@ -17,4 +17,15 @@ for type_tag in allNames:
     list.append(identifier)
 
 
-print ("The indentifers are as follows\n\n"+str(list2))
+print ("The indentifers are as follows\n\n\n"+str(list2))
+
+print ("The indentifers statements are as follows\n\n\n")
+
+
+infileProgram = open("current_work_snips/Mail.java","r")
+with infileProgram as f:
+    for line in f:
+        currentLine = line.strip()
+        for item in list2:
+            if currentLine.find(item) > -1:
+                print currentLine + "   : Found item "+item+" on this line"
